@@ -2,11 +2,11 @@ package shift_lab.crm.core.service.impl;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import shift_lab.crm.api.dto.request.seller.SellerRequestDto;
+import shift_lab.crm.api.dto.request.seller.SellerCreateRequestDto;
+import shift_lab.crm.api.dto.request.seller.SellerPatchRequestDto;
 import shift_lab.crm.core.entity.SellerEntity;
 import shift_lab.crm.core.repository.SellerRepository;
 import shift_lab.crm.core.service.SellerService;
@@ -22,7 +22,7 @@ public class SellerServiceImpl implements SellerService {
     private SellerRepository sellerRepository;
 
     @Override
-    public SellerEntity create(SellerRequestDto sellerDto)
+    public SellerEntity create(SellerCreateRequestDto sellerDto)
     {
         SellerEntity sellerEntity = SellerEntity.builder()
                 .name(sellerDto.name())
@@ -34,16 +34,64 @@ public class SellerServiceImpl implements SellerService {
     }
 
     @Override
-    public Optional<SellerEntity> getById(Long id)
+    public Optional<SellerEntity> getById(String id)
     {
-        return sellerRepository.findById(id);
+        try {
+            Long parsedId = Long.parseLong(id);
+            Optional<SellerEntity> optionalSellerEntity = sellerRepository.findById(parsedId);
+            if (optionalSellerEntity.isPresent() && !optionalSellerEntity.get().getIsDeleted()) {
+                return optionalSellerEntity;
+            }
+            return Optional.empty();
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
     }
 
     @Override
     public List<SellerEntity> getAllSellers(int page, int size)
     {
         Pageable pageable = PageRequest.of(page, size);
-        Page<SellerEntity> pageResult = sellerRepository.findAll(pageable);
-        return pageResult.getContent();
+        return sellerRepository.findAll(pageable).getContent().stream()
+                .filter(seller -> !seller.getIsDeleted())
+                .toList();
+    }
+
+    @Override
+    public List<SellerEntity> getAllDeletedSellers(int page, int size)
+    {
+        Pageable pageable = PageRequest.of(page, size);
+        return sellerRepository.findByIsDeletedTrue(pageable).getContent();
+    }
+
+    @Override
+    public Optional<SellerEntity> update(String id, SellerPatchRequestDto sellerDto)
+    {
+        Optional<SellerEntity> optionalSellerEntity = getById(id);
+        if (optionalSellerEntity.isPresent()) {
+            SellerEntity sellerEntity = optionalSellerEntity.get();
+            if (sellerDto.name() != null) {
+                sellerEntity.setName(sellerDto.name());
+            }
+            if (sellerDto.contactInfo() != null) {
+                sellerEntity.setContactInfo(sellerDto.contactInfo());
+            }
+            sellerRepository.save(sellerEntity);
+            return Optional.of(sellerEntity);
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean delete(String id)
+    {
+        Optional<SellerEntity> optionalSellerEntity = getById(id);
+        if (optionalSellerEntity.isPresent()) {
+            SellerEntity sellerEntity = optionalSellerEntity.get();
+            sellerEntity.setIsDeleted(true);
+            sellerRepository.save(sellerEntity);
+            return true;
+        }
+        return false;
     }
 }

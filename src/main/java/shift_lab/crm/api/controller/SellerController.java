@@ -4,7 +4,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import shift_lab.crm.api.dto.request.seller.SellerRequestDto;
+import shift_lab.crm.api.dto.request.seller.SellerCreateRequestDto;
+import shift_lab.crm.api.dto.request.seller.SellerPatchRequestDto;
 import shift_lab.crm.api.dto.response.seller.SellerResponseDto;
 import shift_lab.crm.api.mapper.SellerMapper;
 import shift_lab.crm.core.entity.SellerEntity;
@@ -12,8 +13,6 @@ import shift_lab.crm.core.service.SellerService;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 @RestController
 @AllArgsConstructor
@@ -23,7 +22,7 @@ public class SellerController {
     private SellerMapper sellerMapper;
 
     @PostMapping
-    public ResponseEntity<SellerResponseDto> create(@RequestBody SellerRequestDto sellerDto) {
+    public ResponseEntity<SellerResponseDto> create(@RequestBody SellerCreateRequestDto sellerDto) {
         SellerResponseDto createdSeller = sellerMapper.map(sellerService.create(sellerDto));
 
         return ResponseEntity
@@ -33,27 +32,23 @@ public class SellerController {
 
     @GetMapping("/{id}")
     public ResponseEntity<SellerResponseDto> getSellerById(@PathVariable String id) {
-        try {
-            Long parsedId = Long.parseLong(id);
-            Optional<SellerEntity> optionalSeller = sellerService.getById(parsedId);
-            if (optionalSeller.isEmpty()) {
-                return ResponseEntity
-                        .status(HttpStatus.NOT_FOUND)
-                        .body(null);
-            }
-            SellerResponseDto sellerResponse = sellerMapper.map(optionalSeller.get());
+        Optional<SellerEntity> optionalSeller = sellerService.getById(id);
+        if (optionalSeller.isPresent()) {
+            SellerResponseDto sellerResponseDto = sellerMapper.map(optionalSeller.get());
             return ResponseEntity
                     .status(HttpStatus.OK)
-                    .body(sellerResponse);
-        } catch (NumberFormatException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(null);
+                    .body(sellerResponseDto);
         }
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(null);
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<SellerResponseDto>> getAllSellers(int page,  int size) {
+    public ResponseEntity<List<SellerResponseDto>> getAllSellers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
         List<SellerResponseDto> sellers = sellerService.getAllSellers(page, size).stream()
                 .filter(seller -> !seller.getIsDeleted())
                 .map(seller -> sellerMapper.map(seller))
@@ -62,5 +57,48 @@ public class SellerController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(sellers);
+    }
+
+    @GetMapping("/all/deleted")
+    public ResponseEntity<List<SellerResponseDto>> getAllDeletedSellers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        List<SellerResponseDto> sellers = sellerService.getAllDeletedSellers(page, size).stream()
+                .map(seller -> sellerMapper.map(seller))
+                .toList();
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(sellers);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<SellerResponseDto> update(
+            @PathVariable(name = "id") String id,
+            @RequestBody SellerPatchRequestDto patchRequestDto
+            ) {
+        Optional<SellerEntity> sellerEntity = sellerService.update(id, patchRequestDto);
+        if (sellerEntity.isPresent()) {
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(sellerMapper.map(sellerEntity.get()));
+        }
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(null);
+    }
+
+    @DeleteMapping("delete/{id}")
+    public ResponseEntity<Void> deleteSeller(@PathVariable String id) {
+        boolean result = sellerService.delete(id);
+        if (result) {
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(null);
+        }
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(null);
     }
 }
