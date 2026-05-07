@@ -16,7 +16,7 @@ import java.util.Optional;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("seller")
+@RequestMapping("/seller")
 public class SellerController {
     private SellerService sellerService;
     private SellerMapper sellerMapper;

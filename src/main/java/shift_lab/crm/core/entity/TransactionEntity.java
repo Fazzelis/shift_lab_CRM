@@ -27,10 +27,10 @@ public class TransactionEntity {
     @Column(name = "amount", nullable = false)
     private BigDecimal amount;
 
-    @Column(name = "paymentType", nullable = false)
+    @Column(name = "payment_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private PaymentEnum paymentType;
 
-    @Column(name = "transactionDate", nullable = false)
+    @Column(name = "transaction_date", nullable = false)
     private LocalDateTime transactionDate;
 }
