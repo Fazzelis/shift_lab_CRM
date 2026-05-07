@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TransactionService {
-    Optional<TransactionEntity> create(TransactionCreateRequestDto transactionDto);
+    TransactionEntity create(TransactionCreateRequestDto transactionDto);
     List<TransactionEntity> findAll(int  page, int size);
-    Optional<TransactionEntity> findById(Long id);
+    TransactionEntity findById(Long id);
     List<TransactionEntity> findAllBySellerId(Long id);
 }

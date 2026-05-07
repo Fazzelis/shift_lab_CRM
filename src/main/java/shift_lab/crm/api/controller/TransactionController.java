@@ -22,15 +22,10 @@ public class TransactionController {
 
     @PostMapping
     public ResponseEntity<TransactionResponseDto> create(@RequestBody TransactionCreateRequestDto transactionDto) {
-        Optional<TransactionEntity> optionalTransaction = transactionService.create(transactionDto);
-        if (optionalTransaction.isPresent()) {
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)
-                    .body(transactionMapper.map(optionalTransaction.get()));
-        }
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(null);
+                .status(HttpStatus.CREATED)
+                .body(transactionMapper.map(transactionService.create(transactionDto)));
+
     }
 
     @GetMapping("/all")
@@ -47,15 +42,9 @@ public class TransactionController {
 
     @GetMapping("/{id}")
     public ResponseEntity<TransactionResponseDto> getById(@PathVariable(name = "id") Long id){
-        Optional<TransactionEntity>  optionalTransaction = transactionService.findById(id);
-        if (optionalTransaction.isPresent()) {
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(transactionMapper.map(optionalTransaction.get()));
-        }
         return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(null);
+                .status(HttpStatus.OK)
+                .body(transactionMapper.map(transactionService.findById(id)));
     }
 
     @GetMapping("/seller-id/{sellerId}")

@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import shift_lab.crm.api.dto.request.transaction.TransactionCreateRequestDto;
 import shift_lab.crm.core.entity.SellerEntity;
 import shift_lab.crm.core.entity.TransactionEntity;
+import shift_lab.crm.core.enums.ErrorCode;
+import shift_lab.crm.core.exception.BusinessException;
 import shift_lab.crm.core.repository.SellerRepository;
 import shift_lab.crm.core.repository.TransactionRepository;
 import shift_lab.crm.core.service.TransactionService;
@@ -25,7 +27,7 @@ public class TransactionServiceImpl implements TransactionService {
     private SellerRepository sellerRepository;
 
     @Override
-    public Optional<TransactionEntity> create(TransactionCreateRequestDto transactionDto) {
+    public TransactionEntity create(TransactionCreateRequestDto transactionDto) {
         Optional<SellerEntity> sellerEntity = sellerRepository.findByIsDeletedFalse(transactionDto.sellerId());
         if  (sellerEntity.isPresent()) {
             TransactionEntity newTransactionEntity = TransactionEntity.builder()
@@ -34,9 +36,9 @@ public class TransactionServiceImpl implements TransactionService {
                     .paymentType(transactionDto.paymentType())
                     .transactionDate(LocalDateTime.now())
                     .build();
-            return Optional.of(transactionRepository.save(newTransactionEntity));
+            return transactionRepository.save(newTransactionEntity);
         }
-        return Optional.empty();
+        throw new BusinessException(ErrorCode.SELLER_NOT_FOUND);
     }
 
     @Override
@@ -46,8 +48,8 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public Optional<TransactionEntity> findById(Long id) {
-        return transactionRepository.findById(id);
+    public TransactionEntity findById(Long id) {
+        return transactionRepository.findById(id).orElseThrow(() -> new BusinessException(ErrorCode.TRANSACTION_NOT_FOUND));
     }
 
     @Override

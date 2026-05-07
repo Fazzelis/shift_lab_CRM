@@ -5,9 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.BindException;
 import shift_lab.crm.api.dto.request.seller.SellerCreateRequestDto;
 import shift_lab.crm.api.dto.request.seller.SellerPatchRequestDto;
 import shift_lab.crm.core.entity.SellerEntity;
+import shift_lab.crm.core.enums.ErrorCode;
+import shift_lab.crm.core.exception.BusinessException;
 import shift_lab.crm.core.repository.SellerRepository;
 import shift_lab.crm.core.service.SellerService;
 
@@ -34,17 +37,17 @@ public class SellerServiceImpl implements SellerService {
     }
 
     @Override
-    public Optional<SellerEntity> getById(String id)
+    public SellerEntity getById(String id)
     {
         try {
             Long parsedId = Long.parseLong(id);
             Optional<SellerEntity> optionalSellerEntity = sellerRepository.findById(parsedId);
             if (optionalSellerEntity.isPresent() && !optionalSellerEntity.get().getIsDeleted()) {
-                return optionalSellerEntity;
+                return optionalSellerEntity.get();
             }
-            return Optional.empty();
+            throw new BusinessException(ErrorCode.SELLER_NOT_FOUND);
         } catch (NumberFormatException e) {
-            return Optional.empty();
+            throw new BusinessException(ErrorCode.NUMBER_FORMAT_EXCEPTION, "Неверный формат id");
         }
     }
 
@@ -65,33 +68,24 @@ public class SellerServiceImpl implements SellerService {
     }
 
     @Override
-    public Optional<SellerEntity> update(String id, SellerPatchRequestDto sellerDto)
+    public SellerEntity update(String id, SellerPatchRequestDto sellerDto)
     {
-        Optional<SellerEntity> optionalSellerEntity = getById(id);
-        if (optionalSellerEntity.isPresent()) {
-            SellerEntity sellerEntity = optionalSellerEntity.get();
-            if (sellerDto.name() != null) {
-                sellerEntity.setName(sellerDto.name());
-            }
-            if (sellerDto.contactInfo() != null) {
-                sellerEntity.setContactInfo(sellerDto.contactInfo());
-            }
-            sellerRepository.save(sellerEntity);
-            return Optional.of(sellerEntity);
+        SellerEntity sellerEntity = getById(id);
+        if (sellerDto.name() != null) {
+            sellerEntity.setName(sellerDto.name());
         }
-        return Optional.empty();
+        if (sellerDto.contactInfo() != null) {
+            sellerEntity.setContactInfo(sellerDto.contactInfo());
+        }
+        return sellerRepository.save(sellerEntity);
     }
 
     @Override
-    public boolean delete(String id)
+    public String delete(String id)
     {
-        Optional<SellerEntity> optionalSellerEntity = getById(id);
-        if (optionalSellerEntity.isPresent()) {
-            SellerEntity sellerEntity = optionalSellerEntity.get();
-            sellerEntity.setIsDeleted(true);
-            sellerRepository.save(sellerEntity);
-            return true;
-        }
-        return false;
+        SellerEntity sellerEntity = getById(id);
+        sellerEntity.setIsDeleted(true);
+        sellerRepository.save(sellerEntity);
+        return "Продавец успешно удален";
     }
 }

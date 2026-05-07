@@ -9,9 +9,9 @@ import java.util.Optional;
 
 public interface SellerService {
     SellerEntity create(SellerCreateRequestDto sellerDto);
-    Optional<SellerEntity> getById(String id);
+    SellerEntity getById(String id);
     List<SellerEntity> getAllSellers(int page, int size);
     List<SellerEntity> getAllDeletedSellers(int page, int size);
-    Optional<SellerEntity> update(String id, SellerPatchRequestDto sellerDto);
-    boolean delete(String id);
+    SellerEntity update(String id, SellerPatchRequestDto sellerDto);
+    String delete(String id);
 }
