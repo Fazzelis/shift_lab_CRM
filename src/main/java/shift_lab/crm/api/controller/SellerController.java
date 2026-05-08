@@ -2,20 +2,22 @@ package shift_lab.crm.api.controller;
 
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import shift_lab.crm.api.dto.TopSellerProjection;
 import shift_lab.crm.api.dto.request.seller.SellerCreateRequestDto;
 import shift_lab.crm.api.dto.request.seller.SellerPatchRequestDto;
 import shift_lab.crm.api.dto.response.BasicResponseDto;
 import shift_lab.crm.api.dto.response.seller.SellerResponseDto;
 import shift_lab.crm.api.dto.response.seller.SellersResponseDto;
+import shift_lab.crm.api.dto.response.seller.TopSellerResponseDto;
 import shift_lab.crm.api.mapper.SellerMapper;
 import shift_lab.crm.core.entity.SellerEntity;
 import shift_lab.crm.core.service.SellerService;
 
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime;
 
 @RestController
 @AllArgsConstructor
@@ -89,12 +91,100 @@ public class SellerController {
                 .body(sellerMapper.map(sellerService.update(id, patchRequestDto)));
     }
 
-    @DeleteMapping("delete/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<BasicResponseDto> deleteSeller(@PathVariable String id) {
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(BasicResponseDto.builder()
                             .message(sellerService.delete(id))
                             .build());
+    }
+
+    @GetMapping("/top-seller")
+    public ResponseEntity<TopSellerResponseDto> getTopSeller(
+            @RequestParam() @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam() @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate
+    ) {
+        TopSellerProjection topSellerProjection = sellerService.getTopSeller(startDate, endDate);
+        SellerResponseDto sellerResponseDto = SellerResponseDto.builder()
+                .id(topSellerProjection.getSeller().getId())
+                .name(topSellerProjection.getSeller().getName())
+                .contactInfo(topSellerProjection.getSeller().getContactInfo())
+                .registrationDate(topSellerProjection.getSeller().getRegistrationDate())
+                .build();
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(TopSellerResponseDto.builder()
+                        .seller(sellerResponseDto)
+                        .totalAmount(topSellerProjection.getTotalAmount())
+                        .build());
+    }
+
+    @GetMapping("/top-seller/day")
+    public ResponseEntity<TopSellerResponseDto> getTopSellerDay() {
+        TopSellerProjection topSellerProjection = sellerService.getTopSeller(LocalDateTime.now().minusDays(1), LocalDateTime.now());
+        SellerResponseDto sellerResponseDto = SellerResponseDto.builder()
+                .id(topSellerProjection.getSeller().getId())
+                .name(topSellerProjection.getSeller().getName())
+                .contactInfo(topSellerProjection.getSeller().getContactInfo())
+                .registrationDate(topSellerProjection.getSeller().getRegistrationDate())
+                .build();
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(TopSellerResponseDto.builder()
+                        .seller(sellerResponseDto)
+                        .totalAmount(topSellerProjection.getTotalAmount())
+                        .build());
+    }
+
+    @GetMapping("/top-seller/month")
+    public ResponseEntity<TopSellerResponseDto> getTopSellerMonth() {
+        TopSellerProjection topSellerProjection = sellerService.getTopSeller(LocalDateTime.now().minusMonths(1), LocalDateTime.now());
+        SellerResponseDto sellerResponseDto = SellerResponseDto.builder()
+                .id(topSellerProjection.getSeller().getId())
+                .name(topSellerProjection.getSeller().getName())
+                .contactInfo(topSellerProjection.getSeller().getContactInfo())
+                .registrationDate(topSellerProjection.getSeller().getRegistrationDate())
+                .build();
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(TopSellerResponseDto.builder()
+                        .seller(sellerResponseDto)
+                        .totalAmount(topSellerProjection.getTotalAmount())
+                        .build());
+    }
+
+    @GetMapping("/top-seller/quarter")
+    public ResponseEntity<TopSellerResponseDto> getTopSellerQuarter() {
+        TopSellerProjection topSellerProjection = sellerService.getTopSeller(LocalDateTime.now().minusMonths(3), LocalDateTime.now());
+        SellerResponseDto sellerResponseDto = SellerResponseDto.builder()
+                .id(topSellerProjection.getSeller().getId())
+                .name(topSellerProjection.getSeller().getName())
+                .contactInfo(topSellerProjection.getSeller().getContactInfo())
+                .registrationDate(topSellerProjection.getSeller().getRegistrationDate())
+                .build();
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(TopSellerResponseDto.builder()
+                        .seller(sellerResponseDto)
+                        .totalAmount(topSellerProjection.getTotalAmount())
+                        .build());
+    }
+
+    @GetMapping("/top-seller/year")
+    public ResponseEntity<TopSellerResponseDto> getTopSellerYear() {
+        TopSellerProjection topSellerProjection = sellerService.getTopSeller(LocalDateTime.now().minusYears(1), LocalDateTime.now());
+        SellerResponseDto sellerResponseDto = SellerResponseDto.builder()
+                .id(topSellerProjection.getSeller().getId())
+                .name(topSellerProjection.getSeller().getName())
+                .contactInfo(topSellerProjection.getSeller().getContactInfo())
+                .registrationDate(topSellerProjection.getSeller().getRegistrationDate())
+                .build();
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(TopSellerResponseDto.builder()
+                        .seller(sellerResponseDto)
+                        .totalAmount(topSellerProjection.getTotalAmount())
+                        .build());
     }
 }

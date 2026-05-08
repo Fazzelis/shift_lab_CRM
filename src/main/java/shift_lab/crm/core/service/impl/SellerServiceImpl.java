@@ -6,14 +6,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import shift_lab.crm.api.dto.TopSellerProjection;
 import shift_lab.crm.api.dto.request.seller.SellerCreateRequestDto;
 import shift_lab.crm.api.dto.request.seller.SellerPatchRequestDto;
 import shift_lab.crm.core.entity.SellerEntity;
 import shift_lab.crm.core.enums.ErrorCode;
 import shift_lab.crm.core.exception.BusinessException;
 import shift_lab.crm.core.repository.SellerRepository;
+import shift_lab.crm.core.repository.TransactionRepository;
 import shift_lab.crm.core.service.SellerService;
-
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -22,6 +23,7 @@ import java.util.Optional;
 @AllArgsConstructor
 public class SellerServiceImpl implements SellerService {
     private SellerRepository sellerRepository;
+    private TransactionRepository transactionRepository;
 
     @Override
     public SellerEntity create(SellerCreateRequestDto sellerDto)
@@ -84,5 +86,16 @@ public class SellerServiceImpl implements SellerService {
         sellerEntity.setIsDeleted(true);
         sellerRepository.save(sellerEntity);
         return "Продавец успешно удален";
+    }
+
+    @Override
+    public TopSellerProjection getTopSeller(LocalDateTime startDate, LocalDateTime endDate)
+    {
+        TopSellerProjection topSellerProjection = transactionRepository.findTopSellerByPeriod(startDate, endDate);
+        if (topSellerProjection != null) {
+            return topSellerProjection;
+        }
+
+        throw new BusinessException(ErrorCode.SELLER_NOT_FOUND, "Самый продуктивный продавец за указанную дату не найден");
     }
 }

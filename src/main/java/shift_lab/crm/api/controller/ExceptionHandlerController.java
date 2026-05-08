@@ -22,7 +22,7 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
         return ResponseEntity
                 .status(ex.getErrorCode().getStatus())
                 .body(ErrorResponse.builder()
-                        .title(ex.getErrorCode().getMessage())
+                        .title(ex.getMessage())
                         .instance(request.getDescription(false).replace("uri=", ""))
                         .timestamp(LocalDateTime.now())
                         .build());
