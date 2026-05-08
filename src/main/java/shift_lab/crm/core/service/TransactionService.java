@@ -1,14 +1,12 @@
 package shift_lab.crm.core.service;
 
+import org.springframework.data.domain.Page;
 import shift_lab.crm.api.dto.request.transaction.TransactionCreateRequestDto;
 import shift_lab.crm.core.entity.TransactionEntity;
 
-import java.util.List;
-import java.util.Optional;
-
 public interface TransactionService {
     TransactionEntity create(TransactionCreateRequestDto transactionDto);
-    List<TransactionEntity> findAll(int  page, int size);
+    Page<TransactionEntity> findAll(int  page, int size);
     TransactionEntity findById(Long id);
-    List<TransactionEntity> findAllBySellerId(Long id);
+    Page<TransactionEntity> findAllBySellerId(Long id, int page, int size);
 }

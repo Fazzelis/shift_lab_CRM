@@ -2,10 +2,10 @@ package shift_lab.crm.core.service.impl;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.BindException;
 import shift_lab.crm.api.dto.request.seller.SellerCreateRequestDto;
 import shift_lab.crm.api.dto.request.seller.SellerPatchRequestDto;
 import shift_lab.crm.core.entity.SellerEntity;
@@ -15,7 +15,6 @@ import shift_lab.crm.core.repository.SellerRepository;
 import shift_lab.crm.core.service.SellerService;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -52,19 +51,17 @@ public class SellerServiceImpl implements SellerService {
     }
 
     @Override
-    public List<SellerEntity> getAllSellers(int page, int size)
+    public Page<SellerEntity> getAllSellers(int page, int size)
     {
         Pageable pageable = PageRequest.of(page, size);
-        return sellerRepository.findAll(pageable).getContent().stream()
-                .filter(seller -> !seller.getIsDeleted())
-                .toList();
+        return sellerRepository.findAllNotDeleted(pageable);
     }
 
     @Override
-    public List<SellerEntity> getAllDeletedSellers(int page, int size)
+    public Page<SellerEntity> getAllDeletedSellers(int page, int size)
     {
         Pageable pageable = PageRequest.of(page, size);
-        return sellerRepository.findByIsDeletedTrue(pageable).getContent();
+        return sellerRepository.findByIsDeletedTrue(pageable);
     }
 
     @Override

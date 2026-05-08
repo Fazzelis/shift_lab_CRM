@@ -2,6 +2,7 @@ package shift_lab.crm.core.service.impl;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -42,9 +43,9 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public List<TransactionEntity> findAll(int  page, int size) {
+    public Page<TransactionEntity> findAll(int  page, int size) {
         Pageable  pageable = PageRequest.of(page, size);
-        return transactionRepository.findAll(pageable).getContent();
+        return transactionRepository.findAll(pageable);
     }
 
     @Override
@@ -53,7 +54,8 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public List<TransactionEntity> findAllBySellerId(Long id) {
-        return  transactionRepository.findAllBySellerId(id);
+    public Page<TransactionEntity> findAllBySellerId(Long id, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return transactionRepository.findAllBySellerId(pageable, id);
     }
 }

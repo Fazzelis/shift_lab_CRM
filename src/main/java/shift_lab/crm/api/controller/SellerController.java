@@ -1,6 +1,7 @@
 package shift_lab.crm.api.controller;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -8,6 +9,7 @@ import shift_lab.crm.api.dto.request.seller.SellerCreateRequestDto;
 import shift_lab.crm.api.dto.request.seller.SellerPatchRequestDto;
 import shift_lab.crm.api.dto.response.BasicResponseDto;
 import shift_lab.crm.api.dto.response.seller.SellerResponseDto;
+import shift_lab.crm.api.dto.response.seller.SellersResponseDto;
 import shift_lab.crm.api.mapper.SellerMapper;
 import shift_lab.crm.core.entity.SellerEntity;
 import shift_lab.crm.core.service.SellerService;
@@ -40,30 +42,41 @@ public class SellerController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<SellerResponseDto>> getAllSellers(
+    public ResponseEntity<SellersResponseDto> getAllSellers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        List<SellerResponseDto> sellers = sellerService.getAllSellers(page, size).stream()
-                .filter(seller -> !seller.getIsDeleted())
-                .map(seller -> sellerMapper.map(seller))
-                .toList();
-
+        Page<SellerEntity> sellers = sellerService.getAllSellers(page, size);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(sellers);
+                .body(SellersResponseDto.builder()
+                        .sellers(sellers.stream()
+                                .map(s -> sellerMapper.map(s))
+                                .toList())
+                        .totalPages(sellers.getTotalPages())
+                        .totalElements(sellers.getTotalElements())
+                        .hasNext(sellers.hasNext())
+                        .hasPrevious(sellers.hasPrevious())
+                        .build());
     }
 
     @GetMapping("/all/deleted")
-    public ResponseEntity<List<SellerResponseDto>> getAllDeletedSellers(
+    public ResponseEntity<SellersResponseDto> getAllDeletedSellers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
+        Page<SellerEntity> sellers = sellerService.getAllDeletedSellers(page, size);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(sellerService.getAllDeletedSellers(page, size).stream()
-                        .map(seller -> sellerMapper.map(seller))
-                        .toList());
+                .body(SellersResponseDto.builder()
+                        .sellers(sellers.stream()
+                                .map(s -> sellerMapper.map(s))
+                                .toList())
+                        .totalPages(sellers.getTotalPages())
+                        .totalElements(sellers.getTotalElements())
+                        .hasNext(sellers.hasNext())
+                        .hasPrevious(sellers.hasPrevious())
+                        .build());
     }
 
     @PatchMapping("/{id}")
