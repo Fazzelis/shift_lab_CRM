@@ -6,17 +6,17 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import shift_lab.crm.api.dto.TopSellerProjection;
+import shift_lab.crm.api.dto.projections.SellerBelowAmountProjection;
+import shift_lab.crm.api.dto.projections.TopSellerProjection;
 import shift_lab.crm.api.dto.request.seller.SellerCreateRequestDto;
 import shift_lab.crm.api.dto.request.seller.SellerPatchRequestDto;
 import shift_lab.crm.api.dto.response.BasicResponseDto;
-import shift_lab.crm.api.dto.response.seller.SellerResponseDto;
-import shift_lab.crm.api.dto.response.seller.SellersResponseDto;
-import shift_lab.crm.api.dto.response.seller.TopSellerResponseDto;
+import shift_lab.crm.api.dto.response.seller.*;
 import shift_lab.crm.api.mapper.SellerMapper;
 import shift_lab.crm.core.entity.SellerEntity;
 import shift_lab.crm.core.service.SellerService;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @RestController
@@ -185,6 +185,40 @@ public class SellerController {
                 .body(TopSellerResponseDto.builder()
                         .seller(sellerResponseDto)
                         .totalAmount(topSellerProjection.getTotalAmount())
+                        .build());
+    }
+
+    @GetMapping("/amount-below")
+    public ResponseEntity<SellersBelowAmountResponseDto> getSellersWithAmountBelow(
+            @RequestParam(defaultValue = "1000") BigDecimal amount,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+            ) {
+        Page<SellerBelowAmountProjection> sellerProjections = sellerService.getSellersBelow(
+                amount,
+                startDate,
+                endDate,
+                page,
+                size
+        );
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(SellersBelowAmountResponseDto.builder()
+                        .totalElements(sellerProjections.getTotalElements())
+                        .totalPages(sellerProjections.getTotalPages())
+                        .hasNext(sellerProjections.hasNext())
+                        .hasPrevious(sellerProjections.hasPrevious())
+                        .sellers(sellerProjections.stream()
+                                .map(s -> SellerBelowAmountResponseDto.builder()
+                                        .id(s.getSeller().getId())
+                                        .name(s.getSeller().getName())
+                                        .contactInfo(s.getSeller().getContactInfo())
+                                        .registrationDate(s.getSeller().getRegistrationDate())
+                                        .amount(s.getTotalAmount())
+                                        .build())
+                                .toList())
                         .build());
     }
 }

@@ -1,4 +1,4 @@
-package shift_lab.crm.api.dto;
+package shift_lab.crm.api.dto.projections;
 
 import shift_lab.crm.core.entity.SellerEntity;
 

@@ -6,7 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import shift_lab.crm.api.dto.TopSellerProjection;
+import shift_lab.crm.api.dto.projections.SellerBelowAmountProjection;
+import shift_lab.crm.api.dto.projections.TopSellerProjection;
 import shift_lab.crm.api.dto.request.seller.SellerCreateRequestDto;
 import shift_lab.crm.api.dto.request.seller.SellerPatchRequestDto;
 import shift_lab.crm.core.entity.SellerEntity;
@@ -15,6 +16,8 @@ import shift_lab.crm.core.exception.BusinessException;
 import shift_lab.crm.core.repository.SellerRepository;
 import shift_lab.crm.core.repository.TransactionRepository;
 import shift_lab.crm.core.service.SellerService;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -97,5 +100,17 @@ public class SellerServiceImpl implements SellerService {
         }
 
         throw new BusinessException(ErrorCode.SELLER_NOT_FOUND, "Самый продуктивный продавец за указанную дату не найден");
+    }
+
+    @Override
+    public Page<SellerBelowAmountProjection> getSellersBelow(
+            BigDecimal amount,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            int page,
+            int size
+    )
+    {
+        return sellerRepository.findAllBelowAmount(startDate, endDate, amount, PageRequest.of(page, size));
     }
 }

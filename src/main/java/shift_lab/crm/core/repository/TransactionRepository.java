@@ -5,9 +5,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import shift_lab.crm.api.dto.TopSellerProjection;
+import shift_lab.crm.api.dto.projections.TopSellerProjection;
 import shift_lab.crm.core.entity.TransactionEntity;
-
 import java.time.LocalDateTime;
 
 public interface TransactionRepository extends JpaRepository<TransactionEntity,Long> {
