@@ -13,7 +13,7 @@ import java.util.List;
 @Getter
 @Setter
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 public class SellerEntity {
     @Id
     @Column(name = "id", nullable = false)

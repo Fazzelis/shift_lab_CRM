@@ -36,8 +36,7 @@ public class SellerServiceImpl implements SellerService {
                 .contactInfo(sellerDto.contactInfo())
                 .registrationDate(LocalDateTime.now())
                 .build();
-        sellerRepository.save(sellerEntity);
-        return sellerEntity;
+        return sellerRepository.save(sellerEntity);
     }
 
     @Override
