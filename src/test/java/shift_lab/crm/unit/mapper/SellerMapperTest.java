@@ -1,4 +1,4 @@
-package shift_lab.crm.mapper;
+package shift_lab.crm.unit.mapper;
 import org.junit.jupiter.api.Test;
 import shift_lab.crm.api.dto.response.seller.SellerResponseDto;
 import shift_lab.crm.api.mapper.SellerMapper;

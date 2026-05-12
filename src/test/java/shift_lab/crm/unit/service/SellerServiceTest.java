@@ -1,4 +1,4 @@
-package shift_lab.crm.service;
+package shift_lab.crm.unit.service;
 
 
 import org.junit.jupiter.api.Test;
@@ -13,8 +13,11 @@ import org.springframework.data.domain.Pageable;
 import shift_lab.crm.api.dto.projections.TopSellerProjection;
 import shift_lab.crm.api.dto.request.seller.SellerCreateRequestDto;
 import shift_lab.crm.api.dto.request.seller.SellerPatchRequestDto;
+import shift_lab.crm.api.dto.response.seller.BestSellerTimeResponseDto;
 import shift_lab.crm.core.entity.SellerEntity;
+import shift_lab.crm.core.entity.TransactionEntity;
 import shift_lab.crm.core.enums.ErrorCode;
+import shift_lab.crm.core.enums.PaymentEnum;
 import shift_lab.crm.core.exception.BusinessException;
 import shift_lab.crm.core.repository.SellerRepository;
 import shift_lab.crm.core.repository.TransactionRepository;
@@ -59,6 +62,17 @@ public class SellerServiceTest {
                 .contactInfo("Contact Info " + sellerId)
                 .registrationDate(LocalDateTime.now())
                 .isDeleted(true)
+                .build();
+    }
+
+    private TransactionEntity createTransaction(Long id, SellerEntity seller, LocalDateTime dateTime)
+    {
+        return TransactionEntity.builder()
+                .id(id)
+                .seller(seller)
+                .amount(BigDecimal.valueOf(5432))
+                .paymentType(PaymentEnum.CARD)
+                .transactionDate(dateTime)
                 .build();
     }
 
@@ -236,7 +250,7 @@ public class SellerServiceTest {
     }
 
     @Test
-    public void getAllSellersTest_WithPageEqualTwo() {
+    public void getAllSellersTest_WithMiddlePage() {
         List<SellerEntity> sellers = List.of(
                 createSeller(4L),
                 createSeller(5L),
@@ -529,5 +543,66 @@ public class SellerServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
                 .isEqualTo(ErrorCode.SELLER_NOT_FOUND);
+    }
+
+    @Test
+    public void getBestSellerTimeTest() {
+        SellerEntity seller = createSeller(1L);
+        List<TransactionEntity> transactions = List.of(
+                createTransaction(1L, seller, LocalDateTime.now().minusDays(5)),
+                createTransaction(2L, seller, LocalDateTime.now().minusDays(5)),
+                createTransaction(3L, seller, LocalDateTime.now().minusDays(4)),
+                createTransaction(4L, seller, LocalDateTime.now().minusDays(2)),
+                createTransaction(5L, seller, LocalDateTime.now().minusDays(1))
+        );
+
+        LocalDateTime startDate = LocalDateTime.now().minusDays(6);
+        LocalDateTime endDate = LocalDateTime.now();
+
+        when(transactionRepository.findSellerTransactionByPeriod(seller.getId(), startDate, endDate)).thenReturn(transactions);
+        BestSellerTimeResponseDto result = sellerService.getBestSellerTime(seller.getId().toString(), startDate, endDate);
+        assertThat(result).isNotNull();
+        assertThat(result.transactionCount()).isEqualTo(3);
+        assertThat(result.startBestTime()).isEqualTo(transactions.get(0).getTransactionDate().toLocalDate());
+        assertThat(result.endBestTime()).isEqualTo(transactions.get(2).getTransactionDate().toLocalDate());
+    }
+
+    @Test
+    public void getBestSellerTimeTest_WithEmptyTransactionList() {
+        assertThatThrownBy(() -> sellerService.getBestSellerTime("1", LocalDateTime.now().minusDays(6), LocalDateTime.now()))
+                .isInstanceOf(BusinessException.class)
+                .extracting("errorCode")
+                .isEqualTo(ErrorCode.EMPTY_LIST);
+    }
+
+    @Test
+    public void getBestSellerTimeTest_WithInvalidSellerId() {
+        assertThatThrownBy(() -> sellerService.getBestSellerTime("abc", LocalDateTime.now().minusDays(6), LocalDateTime.now()))
+                .isInstanceOf(BusinessException.class)
+                .extracting("errorCode")
+                .isEqualTo(ErrorCode.NUMBER_FORMAT_EXCEPTION);
+    }
+
+    @Test
+    public void getBestSellerTimeTest_WithTheSameBestTime() {
+        SellerEntity seller = createSeller(1L);
+        List<TransactionEntity> transactions = List.of(
+                createTransaction(1L, seller, LocalDateTime.now().minusDays(5)),
+                createTransaction(2L, seller, LocalDateTime.now().minusDays(5)),
+                createTransaction(3L, seller, LocalDateTime.now().minusDays(4)),
+                createTransaction(4L, seller, LocalDateTime.now().minusDays(2)),
+                createTransaction(5L, seller, LocalDateTime.now().minusDays(1)),
+                createTransaction(6L, seller, LocalDateTime.now().minusDays(1))
+        );
+
+        LocalDateTime startDate = LocalDateTime.now().minusDays(6);
+        LocalDateTime endDate = LocalDateTime.now();
+
+        when(transactionRepository.findSellerTransactionByPeriod(seller.getId(), startDate, endDate)).thenReturn(transactions);
+        BestSellerTimeResponseDto result = sellerService.getBestSellerTime(seller.getId().toString(), startDate, endDate);
+        assertThat(result).isNotNull();
+        assertThat(result.transactionCount()).isEqualTo(3);
+        assertThat(result.startBestTime()).isEqualTo(transactions.get(0).getTransactionDate().toLocalDate());
+        assertThat(result.endBestTime()).isEqualTo(transactions.get(2).getTransactionDate().toLocalDate());
     }
 }

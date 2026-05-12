@@ -1,4 +1,4 @@
-package shift_lab.crm.service;
+package shift_lab.crm.unit.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
