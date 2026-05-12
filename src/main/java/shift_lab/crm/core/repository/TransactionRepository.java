@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import shift_lab.crm.api.dto.projections.TopSellerProjection;
 import shift_lab.crm.core.entity.TransactionEntity;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public interface TransactionRepository extends JpaRepository<TransactionEntity,Long> {
     @Query("SELECT t FROM TransactionEntity t WHERE t.seller.id = :sellerId")
@@ -19,6 +20,15 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity,L
             "ORDER BY SUM(t.amount) DESC " +
             "LIMIT 1")
     TopSellerProjection findTopSellerByPeriod(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    @Query("SELECT t FROM TransactionEntity t " +
+            "WHERE t.seller.id = :sellerId AND t.transactionDate BETWEEN :startDate AND :endDate " +
+            "ORDER BY t.transactionDate ASC")
+    List<TransactionEntity> findSellerTransactionByPeriod(
+            @Param("sellerId") Long sellerId,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
     );

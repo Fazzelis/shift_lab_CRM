@@ -9,7 +9,8 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
     SELLER_NOT_FOUND(HttpStatus.NOT_FOUND, "Продавец не найден"),
     TRANSACTION_NOT_FOUND(HttpStatus.NOT_FOUND, "Транзакция не найдена"),
-    NUMBER_FORMAT_EXCEPTION(HttpStatus.BAD_REQUEST, "Неверный формат числа");
+    NUMBER_FORMAT_EXCEPTION(HttpStatus.BAD_REQUEST, "Неверный формат числа"),
+    EMPTY_LIST(HttpStatus.NOT_FOUND, "Пустой массив");
 
     private final HttpStatus status;
     private final String message;

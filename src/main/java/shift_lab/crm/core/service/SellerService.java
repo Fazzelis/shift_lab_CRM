@@ -5,6 +5,7 @@ import shift_lab.crm.api.dto.projections.SellerBelowAmountProjection;
 import shift_lab.crm.api.dto.projections.TopSellerProjection;
 import shift_lab.crm.api.dto.request.seller.SellerCreateRequestDto;
 import shift_lab.crm.api.dto.request.seller.SellerPatchRequestDto;
+import shift_lab.crm.api.dto.response.seller.BestSellerTimeResponseDto;
 import shift_lab.crm.core.entity.SellerEntity;
 
 import java.math.BigDecimal;
@@ -19,4 +20,5 @@ public interface SellerService {
     String delete(String id);
     TopSellerProjection getTopSeller(LocalDateTime startDate, LocalDateTime endDate);
     Page<SellerBelowAmountProjection> getSellersBelow(BigDecimal amount, LocalDateTime startDate, LocalDateTime endDate, int page, int size);
+    BestSellerTimeResponseDto getBestSellerTime(String sellerId, LocalDateTime startDate, LocalDateTime endDate);
 }

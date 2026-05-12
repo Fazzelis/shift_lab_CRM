@@ -221,4 +221,15 @@ public class SellerController {
                                 .toList())
                         .build());
     }
+
+    @GetMapping("/{id}/best-time")
+    public ResponseEntity<BestSellerTimeResponseDto> getBestSellerTime(
+            @PathVariable(name = "id") String sellerId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(sellerService.getBestSellerTime(sellerId, startDate, endDate));
+    }
 }
